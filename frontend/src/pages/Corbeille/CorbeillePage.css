@@ -1,0 +1,42 @@
+/* ==========================================================================
+   Corbeille
+   ========================================================================== */
+
+.trash-info {
+  margin-bottom: 16px;
+}
+
+.trash-name {
+  display: block;
+  max-width: 360px;
+}
+
+.table .col-origin {
+  white-space: nowrap;
+}
+.table .col-deleted,
+.table .col-purge {
+  white-space: nowrap;
+}
+.table .col-purge {
+  color: var(--text-3);
+}
+.table .col-purge.is-soon {
+  color: var(--warning);
+  font-weight: 500;
+}
+
+@media (max-width: 860px) {
+  .table .col-origin,
+  .table .col-deleted {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .table .col-purge {
+    display: none;
+  }
+  .trash-name {
+    max-width: 160px;
+  }
+}

@@ -1,0 +1,184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur {
+  idUtilisateur     String           @id() @default(uuid())
+  nomUtilisateur    String
+  mailUtilisateur   String           @unique
+  surnomUtilisateur String           @unique
+  typeUtilisateur   String
+  mdpUtilisateur    String
+  espace            EspaceStockage[]
+  baseDeDonnees     BaseDeDonnees[]
+  projets           Projet[]
+  Fichier           Fichier[]
+  compteGithub      CompteGithub?
+  IdentiteOAuth     IdentiteOAuth[]
+}
+
+model CompteGithub {
+  idCompteGithub   String      @id() @default(uuid())
+  githubId         Int         @unique
+  login            String
+  avatarUrl        String?
+  emailVerifie     Boolean
+  emailPrincipal   String?
+  scope            String
+  tokenChiffre     String
+  tokenValide      Boolean     @default(true)
+  dateLiaison      DateTime    @default(now())
+  dateVerification DateTime    @default(now())
+  idUtilisateur    String      @unique
+  utilisateur      Utilisateur @relation(fields: [idUtilisateur], references: [idUtilisateur])
+}
+
+model IdentiteOAuth {
+  idIdentite    String      @id() @default(uuid())
+  provider      String // github | google
+  providerId    String // identifiant stable chez le fournisseur (jamais l'e-mail)
+  email         String
+  dateLiaison   DateTime    @default(now())
+  idUtilisateur String
+  utilisateur   Utilisateur @relation(fields: [idUtilisateur], references: [idUtilisateur])
+
+  @@unique([provider, providerId])
+  @@index([idUtilisateur])
+}
+
+model EspaceStockage {
+  idEspace      String      @id() @default(uuid())
+  tailleEspace  Float
+  tailleOccupee Float
+  idUtilisateur String
+  cheminEspace  String
+  nomEspace     String
+  idFichiers    String[]
+  fichier       Fichier[]
+  utilisateur   Utilisateur @relation(fields: [idUtilisateur], references: [idUtilisateur])
+}
+
+model Fichier {
+  idFichier     String           @id() @default(uuid())
+  cheminFichier String
+  nomFichier    String
+  tailleFichier Float
+  typeMime      String? // type déclaré à l'envoi (ex. image/png)
+  dateCreation     DateTime  @default(now()) // ajout dans le stockage
+  dateModification DateTime  @default(now()) // dernier renommage / déplacement
+  dateArchivage    DateTime? // archivé à cette date (null = non archivé) : figé, conservé sans limite
+  dateSuppression DateTime? // mis à la corbeille à cette date (null = fichier actif)
+  idEspaces     String[]
+  idUtilisateur String
+  espace        EspaceStockage[]
+  utilisateur   Utilisateur      @relation(fields: [idUtilisateur], references: [idUtilisateur])
+}
+
+model BaseDeDonnees {
+  idBD          String   @id() @default(uuid())
+  nomBD         String
+  typeBD        String // postgresql | mysql | mariadb | mongodb | redis
+  userBD        String
+  mdpBD         String // chiffré (AES-256-GCM)
+  dateCreation  DateTime @default(now())
+  idUtilisateur String
+
+  // Conteneur Docker dédié à cette base
+  versionBD    String? // tag de l'image (ex: "16-alpine")
+  nomBase      String? // nom de la base dans le moteur (null pour Redis)
+  etatBD       String  @default("EN_LIGNE") // CREATION | EN_LIGNE | ARRETE | ERREUR
+  messageEtat  String?
+  mdpAdminBD   String? // mot de passe root MySQL/MariaDB, chiffré
+  idConteneur  String?
+  nomConteneur String?
+  imageDocker  String?
+  nomVolume    String?
+  portHote     Int?    @unique
+
+  utilisateur Utilisateur @relation(fields: [idUtilisateur], references: [idUtilisateur])
+}
+
+model Projet {
+  idProjet      String   @id() @default(uuid())
+  nomProjet     String
+  sourceProjet  String
+  etatProjet    String
+  dateProjet    DateTime @default(now())
+  idUtilisateur String
+
+  // Détails du dépôt GitHub déployé (null pour un projet créé manuellement)
+  depotGithub          String? // "owner/name"
+  brancheProjet        String?
+  typeStack            String? // dockerfile | node | python
+  portApplication      Int?
+  commandeInstallation String?
+  commandeDemarrage    String?
+  commandeTest         String? // null = détection automatique (npm test, pytest…)
+  configEnv            String? // JSON des variables d'environnement, chiffré
+
+  utilisateur  Utilisateur   @relation(fields: [idUtilisateur], references: [idUtilisateur])
+  deploiements Deploiement[]
+}
+
+model Deploiement {
+  idDeploiement   String   @id() @default(uuid())
+  dateDeploiement DateTime @default(now())
+  etatDeploiement String
+  messageEtat     String? // détail de l'état courant (progression, cause d'échec)
+  dateFin         DateTime? // fin du déploiement (DEPLOYE, ERREUR ou ARRETE)
+  etatTests       String? // REUSSIS | ECHEC | AUCUN (étape de tests du pipeline)
+  idProjet        String
+
+  // Détails du déploiement Docker
+  commitSha      String?
+  branche        String?
+  idConteneur    String?
+  nomConteneur   String?
+  imageDocker    String?
+  portHote       Int?    @unique // unique => impossible d'attribuer deux fois le même port
+  urlDeploiement String?
+
+  projet  Projet   @relation(fields: [idProjet], references: [idProjet])
+  logs    Log[]
+  alertes Alerte[]
+}
+
+model Log {
+  idLog         String      @id() @default(uuid())
+  objetLog      String
+  detailLog     String
+  dateLog       DateTime    @default(now())
+  idDeploiement String
+  deploiement   Deploiement @relation(fields: [idDeploiement], references: [idDeploiement])
+}
+
+model Alerte {
+  idAlerte         String      @id() @default(uuid())
+  titreAlerte      String
+  dateAlerte       String
+  prioriteAlerte   String
+  validationAlerte Boolean
+  alerteResolu     Boolean
+  idDeploiement    String
+  deploiement      Deploiement @relation(fields: [idDeploiement], references: [idDeploiement])
+}
+
+// Security 
+model BlackListedTokens {
+  id         Int      @id @default(autoincrement())
+  token      String
+  dateAdding DateTime @default(now())
+}

@@ -1,0 +1,183 @@
+/* ==========================================================================
+   Espaces de stockage
+   ========================================================================== */
+
+.storage-summary {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.storage-summary-label,
+.space-usage-label {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+.storage-summary-value {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.storage-summary-value span {
+  font-size: var(--fs-md);
+  font-weight: 400;
+  color: var(--text-3);
+  letter-spacing: 0;
+}
+.storage-summary-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-sm);
+}
+
+.table .col-usage {
+  width: 34%;
+  min-width: 200px;
+}
+
+/* --- Détail d'un espace -------------------------------------------------- */
+
+.space-detail {
+  position: relative;
+}
+
+.space-usage {
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.space-usage-figures {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.space-usage-value {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Zone de dépôt plein écran pendant un glisser-déposer */
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 105, 138, 0.08);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  animation: fade-in 120ms var(--ease);
+}
+.drop-overlay-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 36px 48px;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.drop-overlay-box p {
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  color: var(--text);
+  margin-top: 6px;
+}
+.drop-overlay-box span {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+/* Suivi des imports */
+.upload-panel {
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.upload-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 10px 20px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+  min-height: 48px;
+}
+.upload-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.upload-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.upload-item:last-child {
+  border-bottom: none;
+}
+.upload-status {
+  display: flex;
+  margin-top: 2px;
+  color: var(--accent);
+}
+.upload-item.is-done .upload-status {
+  color: var(--success);
+}
+.upload-item.is-error .upload-status {
+  color: var(--danger);
+}
+.upload-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.upload-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.upload-size {
+  flex-shrink: 0;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+.upload-error {
+  font-size: var(--fs-sm);
+  color: var(--danger);
+}
+
+@media (max-width: 640px) {
+  .storage-summary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .space-usage-figures {
+    gap: 24px;
+  }
+}
+
+.space-formats {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  cursor: help;
+}
